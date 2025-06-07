@@ -8,7 +8,9 @@ import threading
 import time
 import cv2
 import numpy as np
+import keyboard
 
+#global flag to turn on/off
 RUNNING = False;
 
 # Set up translator
@@ -28,7 +30,7 @@ def get_word_under_mouse():
     mouse_x, mouse_y = pyautogui.position()
 
     # Use pytesseract to get word boxes
-    data = pytesseract.image_to_data(screen_rgb, output_type=pytesseract.Output.DICT)
+    data = pytesseract.image_to_data(screen_rgb, output_type=pytesseract.Output.DICT, lang='chi_sim')
 
     for i in range(len(data['text'])):
         word = data['text'][i]
@@ -41,7 +43,18 @@ def get_word_under_mouse():
 
     return None  # No word under cursor
 
+# def get_word_under_mouse():
+#     # Get current mouse position
+#     x, y = pyautogui.position()
 
+#     # Define a horizontal slice (wide and short)
+#     region = (x - 150, y - 15, x + 150, y + 15)
+#     img = ImageGrab.grab(bbox=region)
+
+#     # OCR with Chinese + English support
+#     text_line = pytesseract.image_to_string(img, lang='chi_sim').strip()
+
+#     return text_line if text_line else None
 
 # Create tkinter overlay window
 class Overlay:
@@ -64,7 +77,9 @@ class Overlay:
 overlay = Overlay()
 
 def live_translate():
+    global RUNNING
     while True:
+        # if RUNNING:
         try:
             x, y = pyautogui.position()
             # Capture region under cursor
@@ -75,17 +90,39 @@ def live_translate():
 
             if text:
                 translated = translator.translate(text, src='auto', dest='en').text
-                overlay.show_text(text, x + 20, y + 20)
+                overlay.show_text(translated, x + 20, y + 20)
             else:
                 overlay.hide()
         except Exception as e:
             print(f"Error: {e}")
             overlay.hide()
+
+        # else:
+        #     overlay.hide()
         
         time.sleep(0.5)
 
+# def TempOffButton():
+#     global RUNNING
+#     print("Press 1 to START, 2 to STOP")
+
+#     while True:
+#         if keyboard.is_pressed('1') and not RUNNING:
+#             print("Started")
+#             RUNNING = True
+#             time.sleep(0.05)  # debounce
+#         elif keyboard.is_pressed('2') and RUNNING:
+#             print("Stopped")
+#             RUNNING = False
+#             overlay.hide()
+#             time.sleep(0.05)  # debounce
+
+
 # Run in a background thread so the Tkinter loop can run
 threading.Thread(target=live_translate, daemon=True).start()
+# threading.Thread(target=TempOffButton, daemon=True).start()
 
 #MAIN LOOP
+
 overlay.root.mainloop()
+
