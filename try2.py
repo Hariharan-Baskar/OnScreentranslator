@@ -11,7 +11,7 @@ import numpy as np
 import keyboard
 
 #global flag to turn on/off
-RUNNING = False;
+RUNNING = False
 
 # Set up translator
 translator = Translator()
